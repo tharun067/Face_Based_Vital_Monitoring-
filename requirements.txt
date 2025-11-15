@@ -1,0 +1,33 @@
+# Core Dependencies
+tensorflow==2.15.0
+numpy==1.24.3
+opencv-python==4.8.1.78
+scipy==1.11.3
+
+# Web Framework
+streamlit
+
+# Face Detection
+mediapipe==0.10.7
+
+# Data Processing
+pandas==2.1.3
+scikit-learn==1.3.2
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Model Training
+tensorboard==2.15.1
+h5py==3.10.0
+
+# Data Download (optional)
+kaggle==1.5.16
+
+# Progress Bars
+tqdm==4.66.1
+
+# Additional utilities
+Pillow==10.1.0
+pyyaml==6.0.1
