@@ -27,19 +27,85 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
     <style>
-    .big-metric {
-        font-size: 2.5rem !important;
+    /* Vitals metrics styling */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem !important;
         font-weight: bold !important;
+        color: #1f77b4 !important;
     }
-    .metric-label {
+    
+    [data-testid="stMetricLabel"] {
         font-size: 1rem !important;
-        color: #666 !important;
+        font-weight: 600 !important;
+        color: #262730 !important;
     }
-    .stMetric {
-        background-color: #f0f2f6;
-        padding: 15px;
+    
+    /* Individual metric containers with colored backgrounds */
+    div[data-testid="column"]:has([data-testid="stMetric"]) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    /* Override metric colors for visibility */
+    div[data-testid="stMetric"] {
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        padding: 1rem !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #667eea !important;
+    }
+    
+    /* Heart Rate - Red theme */
+    div[data-testid="column"]:nth-child(1) div[data-testid="stMetric"] {
+        border-left-color: #ef4444 !important;
+    }
+    
+    div[data-testid="column"]:nth-child(1) [data-testid="stMetricValue"] {
+        color: #ef4444 !important;
+    }
+    
+    /* HRV - Green theme */
+    div[data-testid="column"]:nth-child(2) div[data-testid="stMetric"] {
+        border-left-color: #10b981 !important;
+    }
+    
+    div[data-testid="column"]:nth-child(2) [data-testid="stMetricValue"] {
+        color: #10b981 !important;
+    }
+    
+    /* SpO2 - Blue theme */
+    div[data-testid="column"]:nth-child(3) div[data-testid="stMetric"] {
+        border-left-color: #3b82f6 !important;
+    }
+    
+    div[data-testid="column"]:nth-child(3) [data-testid="stMetricValue"] {
+        color: #3b82f6 !important;
+    }
+    
+    /* Stress - Orange theme */
+    div[data-testid="column"]:nth-child(4) div[data-testid="stMetric"] {
+        border-left-color: #f59e0b !important;
+    }
+    
+    div[data-testid="column"]:nth-child(4) [data-testid="stMetricValue"] {
+        color: #f59e0b !important;
+    }
+    
+    /* Respiratory Rate - Purple theme */
+    div[data-testid="stMetric"]:has([aria-label*="Respiratory"]) {
+        border-left-color: #8b5cf6 !important;
+    }
+    
+    .stMetric [data-testid="stMetricValue"]:has(+ [aria-label*="Respiratory"]) {
+        color: #8b5cf6 !important;
+    }
+    
+    /* Caption/timestamp styling */
+    .stCaptionContainer {
+        color: #6b7280 !important;
+        font-style: italic;
+        margin-top: 0.5rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -249,15 +315,15 @@ def main():
         status_placeholder = st.empty()
     
     with col2:
-        st.subheader("📊 Current Vitals")
+        st.markdown("### 📊 Current Vitals")
         
-        # Create vitals container
+        # Create vitals container with custom styling
         vitals_container = st.container()
         
         with vitals_container:
-            # Vitals display metrics
-            metric1, metric2 = st.columns(2)
-            metric3, metric4 = st.columns(2)
+            # Vitals display metrics with spacing
+            metric1, metric2 = st.columns(2, gap="small")
+            metric3, metric4 = st.columns(2, gap="small")
             
             # Store placeholders in session state for dynamic updates
             if 'vitals_placeholders' not in st.session_state:
@@ -270,12 +336,32 @@ def main():
                     'timestamp': st.empty()
                 }
             
-            # Initialize with default values
-            st.session_state.vitals_placeholders['hr'].metric("Heart Rate", "-- bpm", help="Beats per minute")
-            st.session_state.vitals_placeholders['hrv'].metric("HRV (SDNN)", "-- ms", help="Heart rate variability")
-            st.session_state.vitals_placeholders['spo2'].metric("SpO2", "-- %", help="Blood oxygen saturation")
-            st.session_state.vitals_placeholders['stress'].metric("Stress Index", "--", help="Stress level (0-100)")
-            st.session_state.vitals_placeholders['rr'].metric("Respiratory Rate", "-- rpm", help="Breaths per minute")
+            # Initialize with default values and emojis
+            st.session_state.vitals_placeholders['hr'].metric(
+                "❤️ Heart Rate", 
+                "-- bpm", 
+                help="Beats per minute"
+            )
+            st.session_state.vitals_placeholders['hrv'].metric(
+                "💚 HRV (SDNN)", 
+                "-- ms", 
+                help="Heart rate variability"
+            )
+            st.session_state.vitals_placeholders['spo2'].metric(
+                "🩸 SpO2", 
+                "-- %", 
+                help="Blood oxygen saturation"
+            )
+            st.session_state.vitals_placeholders['stress'].metric(
+                "😰 Stress Index", 
+                "--", 
+                help="Stress level (0-100)"
+            )
+            st.session_state.vitals_placeholders['rr'].metric(
+                "🫁 Respiratory Rate", 
+                "-- rpm", 
+                help="Breaths per minute"
+            )
             st.session_state.vitals_placeholders['timestamp'].caption("⏱️ Waiting for data...")
         
         st.divider()
@@ -338,34 +424,38 @@ def main():
             # Display video with output_format to avoid caching issues
             video_placeholder.image(processed_frame_rgb, channels="RGB", width="stretch", output_format="JPEG")
             
-            # Update vitals display
+            # Update vitals display with colors
             if vitals and vitals['heart_rate'] > 0:
                 st.session_state.vitals_placeholders['hr'].metric(
-                    "Heart Rate",
+                    "❤️ Heart Rate",
                     f"{vitals['heart_rate']:.1f} bpm",
+                    delta=f"{vitals['heart_rate'] - 70:.0f}" if vitals['heart_rate'] > 0 else None,
                     help="Beats per minute"
                 )
                 
                 st.session_state.vitals_placeholders['hrv'].metric(
-                    "HRV (SDNN)",
+                    "💚 HRV (SDNN)",
                     f"{vitals['hrv']:.1f} ms",
                     help="Heart rate variability"
                 )
                 
                 st.session_state.vitals_placeholders['spo2'].metric(
-                    "SpO2",
+                    "🩸 SpO2",
                     f"{vitals['spo2']:.1f}%",
+                    delta=f"{vitals['spo2'] - 98:.0f}%" if vitals['spo2'] > 0 else None,
                     help="Blood oxygen saturation"
                 )
                 
+                # Color code stress level
+                stress_emoji = "😌" if vitals['stress_index'] < 30 else "😰" if vitals['stress_index'] < 60 else "😫"
                 st.session_state.vitals_placeholders['stress'].metric(
-                    "Stress Index",
+                    f"{stress_emoji} Stress Index",
                     f"{vitals['stress_index']:.1f}",
                     help="Stress level (0-100)"
                 )
                 
                 st.session_state.vitals_placeholders['rr'].metric(
-                    "Respiratory Rate",
+                    "🫁 Respiratory Rate",
                     f"{vitals['respiratory_rate']:.1f} rpm",
                     help="Breaths per minute"
                 )
